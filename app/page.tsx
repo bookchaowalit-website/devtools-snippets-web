@@ -1,70 +1,73 @@
-import { Code2 } from 'lucide-react';
+"use client";
+
+import { useMemo, useState } from "react";
+
+type Snippet = { id: string; title: string; code: string; language: string; category: string; tags: string[] };
+const SNIPPETS: Snippet[] = [
+  { id: "1", title: "React Hook", code: "const useHook = () => {\n  return { ready: true };\n};", language: "javascript", category: "React", tags: ["react", "hook"] },
+  { id: "2", title: "Python Decorator", code: "def traced(fn):\n    def wrapper(*args):\n        return fn(*args)\n    return wrapper", language: "python", category: "Python", tags: ["python", "decorator"] },
+  { id: "3", title: "Typed Result", code: "type Result<T> =\n  | { ok: true; value: T }\n  | { ok: false; error: Error };", language: "typescript", category: "TypeScript", tags: ["types", "result"] },
+];
 
 export default function Home() {
-  const tools = [
-    { name: 'get_all', description: 'Get all items', icon: Code2, params: [] },
-    { name: 'get_by_id', description: 'Get item by ID', icon: Code2, params: ['id (required)'] },
-    { name: 'search', description: 'Search items', icon: Code2, params: ['query (required)'] }
-  ];
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("All");
+  const [selectedId, setSelectedId] = useState(SNIPPETS[0].id);
+  const [copied, setCopied] = useState(false);
+  const visible = useMemo(() => SNIPPETS.filter((snippet) => {
+    const text = `${snippet.title} ${snippet.language} ${snippet.category} ${snippet.tags.join(" ")}`.toLowerCase();
+    return (category === "All" || snippet.category === category) && text.includes(query.toLowerCase());
+  }), [category, query]);
+  const selected = SNIPPETS.find((snippet) => snippet.id === selectedId) || visible[0] || SNIPPETS[0];
+
+  async function copyCode() {
+    try {
+      await navigator.clipboard.writeText(selected.code);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1400);
+    } catch { setCopied(false); }
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <header className="border-b border-slate-700/50 backdrop-blur-sm">
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-600">
-              <Code2 className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">Code Snippets Library</h1>
-              <p className="text-sm text-slate-400">Portfolio Showcase</p>
-            </div>
-          </div>
-        </div>
+    <main className="snippet-shell">
+      <header className="snippet-header">
+        <div className="snippet-brand"><span className="snippet-cursor" aria-hidden="true" /><span>SPECIMEN / INDEX</span></div>
+        <a href="/api/mcp" className="snippet-endpoint">MCP ENDPOINT <span>OPEN</span></a>
       </header>
 
-      <section className="container mx-auto px-6 py-16">
-        <div className="mx-auto max-w-4xl text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-2">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-amber-400"></span>
-            <span className="text-sm text-amber-300">MCP-Enabled Server</span>
+      <section className="snippet-intro">
+        <div>
+          <h1>Small code, kept sharp.</h1>
+          <p>A local shelf of reusable specimens. Pick a language, read the whole shape, copy the part worth keeping.</p>
+        </div>
+        <span className="snippet-count">{String(SNIPPETS.length).padStart(2, "0")} specimens / local data</span>
+      </section>
+
+      <section className="snippet-controls" aria-label="Snippet filters">
+        <label><span>FIND</span><input aria-label="Search snippets" placeholder="Search title, language, tag" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
+        <div className="snippet-categories"><span>GROUP</span>{["All", "React", "Python", "TypeScript"].map((item) => <button key={item} type="button" aria-pressed={category === item} onClick={() => setCategory(item)}>{item}</button>)}</div>
+      </section>
+
+      <section className="snippet-stage">
+        <aside className="snippet-list" aria-label="Snippet list">
+          <div className="snippet-list-head"><span>LIBRARY</span><span>{visible.length} / {SNIPPETS.length}</span></div>
+          {visible.length > 0 ? visible.map((snippet, index) => <button key={snippet.id} type="button" className={`snippet-entry ${selected.id === snippet.id ? "is-selected" : ""}`} onClick={() => setSelectedId(snippet.id)}><span>{String(index + 1).padStart(2, "0")}</span><strong>{snippet.title}</strong><small>{snippet.language}</small></button>) : <p className="snippet-empty">No specimen found.</p>}
+          <div className="snippet-boundary"><span>SERVER SURFACE</span><code>POST /api/mcp</code><p>Protocol showcase only. The local page does not claim a remote catalog.</p></div>
+        </aside>
+
+        <article className="snippet-sheet" aria-live="polite">
+          <div className="snippet-sheet-top"><span>{selected.category} / {selected.language}</span><span>#{selected.id.padStart(2, "0")}</span></div>
+          <h2>{selected.title}</h2>
+          <div className="snippet-code" aria-label={`${selected.title} code`}>
+            <div className="snippet-code-bar"><span>source specimen</span><button type="button" onClick={copyCode}>{copied ? "COPIED" : "COPY CODE"}</button></div>
+            <pre><code>{selected.code.split("\n").map((line, index) => <span className="snippet-line" key={`${line}-${index}`}><i>{String(index + 1).padStart(2, "0")}</i>{line || " "}</span>)}</code></pre>
           </div>
-          <h2 className="mb-6 text-5xl font-bold text-white">Code Snippets Library</h2>
-          <p className="mb-8 text-lg text-slate-300">Your comprehensive Code Snippets Library with MCP integration.</p>
-          <a href="/api/mcp" className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-3 font-medium text-white transition-all hover:from-amber-600 hover:to-amber-700">
-            <Code2 className="h-4 w-4" /> MCP Endpoint
-          </a>
-        </div>
+          <div className="snippet-tags">{selected.tags.map((tag) => <span key={tag}>#{tag}</span>)}</div>
+          <p className="snippet-sheet-note">Authored demo data · copy stays in your browser clipboard · no save account.</p>
+        </article>
       </section>
 
-      <section className="container mx-auto px-6 pb-20">
-        <div className="mb-10 text-center">
-          <h3 className="mb-4 text-3xl font-bold text-white">Available MCP Tools</h3>
-        </div>
-        <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
-          {tools.map((tool) => {
-            const Icon = tool.icon;
-            return (
-              <div key={tool.name} className="rounded-xl border border-slate-700/50 bg-slate-800/30 p-6 backdrop-blur-sm transition-all hover:border-amber-500/50 hover:bg-slate-800/50">
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-600/20">
-                  <Icon className="h-6 w-6 text-amber-400" />
-                </div>
-                <h4 className="mb-2 font-semibold text-white">{tool.name}</h4>
-                <p className="mb-4 text-sm text-slate-400">{tool.description}</p>
-                {tool.params.length > 0 && tool.params.map((param) => (
-                  <code key={param} className="block rounded bg-slate-900/50 px-2 py-1 text-xs text-amber-300">{param}</code>
-                ))}
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      <footer className="border-t border-slate-700/50">
-        <div className="container mx-auto px-6 py-8">
-          <p className="text-center text-sm text-slate-500">Part of the bookchaowalit portfolio ecosystem</p>
-        </div>
-      </footer>
-    </div>
+      <footer className="snippet-footer"><span>BOOKCHAOWALIT / DEV TOOLS</span><span>READ THE SHAPE BEFORE YOU REUSE IT</span></footer>
+    </main>
   );
 }

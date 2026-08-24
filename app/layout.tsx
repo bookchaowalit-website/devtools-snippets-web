@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/react"
-import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bookchaowalit - Bookchaowalit",
-  description: "Bookchaowalit by Bookchaowalit - A modern web application built with Next.js",
-  keywords: ['Bookchaowalit', 'Bookchaowalit', 'Next.js', 'React', 'TypeScript'],
+  title: "Specimen / Index | Bookchaowalit",
+  description: "A small local code specimen library with an honest MCP boundary.",
+  keywords: ['code snippets', 'MCP', 'developer tools'],
   authors: [{ name: 'Bookchaowalit', url: 'https://bookchaowalit.com' }],
   creator: 'Bookchaowalit',
   publisher: 'Bookchaowalit',
@@ -29,8 +27,8 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://bookchaowalit.com',
-    title: 'Bookchaowalit - Bookchaowalit',
-    description: 'Bookchaowalit by Bookchaowalit - A modern web application built with Next.js',
+    title: 'Specimen / Index | Bookchaowalit',
+    description: 'A small local code specimen library with an honest MCP boundary.',
     siteName: 'Bookchaowalit',
     images: [
       {
@@ -71,8 +69,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Analytics />
-        <SpeedInsights />
         {children}
       </body>
     </html>
